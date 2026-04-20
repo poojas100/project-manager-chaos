@@ -2,17 +2,39 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
+from agents.greedy_agent import GreedyAgent
 from agents.heuristic_agent import HeuristicAgent
+from agents.model_agent import SB3PolicyAgent
 from agents.random_agent import RandomAgent
 from env.project_env import ProjectEnv
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run a narrated Project Manager Chaos episode.")
-    parser.add_argument("--agent", choices=("heuristic", "random"), default="heuristic")
+    parser.add_argument(
+        "--agent",
+        choices=("heuristic", "random", "greedy", "ppo", "dqn"),
+        default="heuristic",
+    )
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--model-path", type=Path, default=None)
     return parser.parse_args()
+
+
+def build_agent(args: argparse.Namespace, env: ProjectEnv):
+    if args.agent == "heuristic":
+        return HeuristicAgent()
+    if args.agent == "random":
+        return RandomAgent(env, seed=args.seed)
+    if args.agent == "greedy":
+        return GreedyAgent(env)
+    if args.agent in {"ppo", "dqn"}:
+        if args.model_path is None:
+            raise ValueError(f"--model-path is required when agent={args.agent}")
+        return SB3PolicyAgent.from_path(env=env, algorithm=args.agent, model_path=args.model_path)
+    raise ValueError(f"Unsupported agent: {args.agent}")
 
 
 def main() -> None:
@@ -21,7 +43,7 @@ def main() -> None:
     _, info = env.reset(seed=args.seed)
     state = info["state"]
 
-    agent = HeuristicAgent() if args.agent == "heuristic" else RandomAgent(env, seed=args.seed)
+    agent = build_agent(args, env)
 
     print(f"Running demo with agent={args.agent} seed={args.seed}")
     print("=" * 72)

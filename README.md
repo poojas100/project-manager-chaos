@@ -5,6 +5,8 @@
 The environment is the center of the project. Agents only choose actions. This keeps the repo ready for:
 
 - baseline rule agents
+- greedy one-step action selection
+- value-based training with DQN
 - PPO training with `stable-baselines3`
 - future LLM-driven action selection using the same action schema
 
@@ -18,6 +20,7 @@ project-manager-chaos/
 |-- tests/
 |-- training/
 |-- utils/
+|-- artifacts/
 |-- requirements.txt
 ```
 
@@ -48,6 +51,18 @@ python -m scripts.evaluate_agents --episodes 10 --seed 7
 python -m training.train_ppo --timesteps 5000 --output-dir artifacts/ppo_baseline
 ```
 
+6. Train a DQN baseline:
+
+```bash
+python -m training.train_dqn --timesteps 5000 --output-dir artifacts/dqn_baseline
+```
+
+7. Evaluate trained models alongside baselines:
+
+```bash
+python -m scripts.evaluate_agents --episodes 10 --seed 7 --ppo-model-path artifacts/ppo_baseline/ppo_project_manager.zip --dqn-model-path artifacts/dqn_baseline/dqn_project_manager.zip
+```
+
 ## Environment Design
 
 Each timestep contains:
@@ -68,6 +83,7 @@ The canonical action schema is:
 The Gymnasium environment supports both:
 
 - discrete integer actions for PPO
+- discrete integer actions for DQN
 - structured action dictionaries for heuristic and LLM agents
 
 ## Testing

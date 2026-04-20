@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from agents.greedy_agent import GreedyAgent
 from agents.heuristic_agent import HeuristicAgent
 from agents.random_agent import RandomAgent
 from env.events import apply_event
@@ -100,11 +101,17 @@ def test_episode_ends_by_completion_or_max_steps():
 
 def test_baseline_agents_can_run_rollouts():
     env_random = ProjectEnv(seed=5)
+    env_greedy = ProjectEnv(seed=5)
     env_heuristic = ProjectEnv(seed=5)
     random_agent = RandomAgent(env_random, seed=5)
+    greedy_agent = GreedyAgent(env_greedy)
     heuristic_agent = HeuristicAgent()
 
-    for env, agent in ((env_random, random_agent), (env_heuristic, heuristic_agent)):
+    for env, agent in (
+        (env_random, random_agent),
+        (env_greedy, greedy_agent),
+        (env_heuristic, heuristic_agent),
+    ):
         _, info = env.reset(seed=5)
         state = info["state"]
         terminated = False
